@@ -11,7 +11,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${Boost_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
 
 
-add_executable(${PROJECT_NAME}_test test.cpp)
+add_executable(${PROJECT_NAME}_test test.cpp test.hpp)
 include_directories(${PROJECT_NAME}_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/Catch/single_include/.)
 target_link_libraries(${PROJECT_NAME}_test ${PROJECT_NAME})
 

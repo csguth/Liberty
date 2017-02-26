@@ -18,7 +18,7 @@ namespace ast
 
 struct SimpleAttribute
 {
-    using Value = boost::variant<double, int, std::string>;
+    using Value = boost::variant<double, std::string, int>;
     std::string name;
     Value value;
 };
