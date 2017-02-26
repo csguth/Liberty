@@ -74,18 +74,18 @@ namespace ast
     x3::rule<class attributeList, std::vector<AttributeStatement> > attributeList = "attributeList";
     x3::rule<class groupStatement, GroupStatement> groupStatement = "groupStatement";
 
-    const auto name_def = (x3::char_("A-Za-z_") >> *(x3::char_("A-Za-z0-9_")));
-    const auto quotedString_def = lexeme['"' >> *(char_ - '"') >> '"'];
-    const auto nonQuotedString_def = *x3::char_("0-9") >> x3::char_("A-Za-z_") >> *x3::char_("A-Za-z-0-9_");
-    const auto stringValue_def = (quotedString | nonQuotedString);
-    const auto value_def = (strictDouble | stringValue | int_);
-    const auto simpleAttribute_def = name >> ':' >> value >> ';';
-    const auto complexAttribute_def = name >> '(' >> (value % ',')  >> ')' >> lit(";");
-    const auto defineStatement_def = lit("define") >> '(' >> name >> ',' >> name >> ',' >> attribute >> ')' >> lit(";");
-    const auto attributeList_def = ('{' >> *attributeStatement >> '}');
-    const auto groupStatement_def = (name >> ('('>> -stringValue >> ')') >> attributeList);
-    const auto attributeStatement_def = (defineStatement|simpleAttribute|complexAttribute|groupStatement);
-    const auto spaceComment = x3::rule<class spaceComment>{} = ascii::space | lexeme[lit("/*") >> *(char_ - x3::string("*/")) >> lit("*/")];
+    const auto name_def                 = (x3::char_("A-Za-z_") >> *(x3::char_("A-Za-z0-9_")));
+    const auto quotedString_def         = lexeme['"' >> *(char_ - '"') >> '"'];
+    const auto nonQuotedString_def      = *x3::char_("0-9") >> x3::char_("A-Za-z_") >> *x3::char_("A-Za-z-0-9_");
+    const auto stringValue_def          = (quotedString | nonQuotedString);
+    const auto value_def                = (strictDouble | stringValue | int_);
+    const auto simpleAttribute_def      = name >> ':' >> value >> ';';
+    const auto complexAttribute_def     = name >> '(' >> (value % ',')  >> ')' >> lit(";");
+    const auto defineStatement_def      = lit("define") >> '(' >> name >> ',' >> name >> ',' >> attribute >> ')' >> lit(";");
+    const auto attributeList_def        = ('{' >> *attributeStatement >> '}');
+    const auto groupStatement_def       = (name >> ('('>> -stringValue >> ')') >> attributeList);
+    const auto attributeStatement_def   = (defineStatement|simpleAttribute|complexAttribute|groupStatement);
+    const auto spaceComment             = x3::rule<class spaceComment>{} = ascii::space | lexeme[lit("/*") >> *(char_ - x3::string("*/")) >> lit("*/")];
 
     BOOST_SPIRIT_DEFINE(name, quotedString, nonQuotedString, stringValue, value, simpleAttribute, complexAttribute, defineStatement, attributeList, attributeStatement, groupStatement)
 
