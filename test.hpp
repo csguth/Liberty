@@ -149,4 +149,38 @@ namespace spirit_test
     //~ }
 }
 
+#include <fstream>
+#include <iterator>
+#include <algorithm>
+
+#include "LibertyLibrary.h"
+
+class Sample2LateFilenameFixture
+{
+protected:
+    Sample2LateFilenameFixture()
+    {
+#ifndef LIBERTY_TEST_RESOURCE_PATH
+        static_assert(1!=1, "Please set -DLIBERTY_TEST_RESOURCE_PATH");
+#endif
+    }
+    virtual ~Sample2LateFilenameFixture()
+    {
+
+    }
+
+    static const char test_filename[];
+};
+
+class ParsingApiFixture: public Sample2LateFilenameFixture
+{
+public:
+    ParsingApiFixture();
+
+protected:
+    bool result;
+    std::vector<char> buffer;
+    liberty::ast::Library library;
+};
+
 #endif

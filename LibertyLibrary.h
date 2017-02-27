@@ -3,16 +3,17 @@
 
 #include <string>
 #include <vector>
+#include <functional>
+#include <memory>
 
-#include <boost/config/warning_disable.hpp>
 #include <boost/spirit/home/x3.hpp>
 #include <boost/spirit/home/x3/support/ast/variant.hpp>
-#include <boost/fusion/include/adapt_struct.hpp>
-#include <boost/fusion/include/std_pair.hpp>
-#include <boost/fusion/include/io.hpp>
 
 namespace liberty
 {
+
+class Cell;
+
 namespace ast
 {
 
@@ -58,13 +59,35 @@ struct GroupStatement
     std::vector<AttributeStatement> children;
 };
 
+using Library = GroupStatementAst;
+class Visitor final
+{
+public:
+    using result_type = void;
+    result_type operator()(const ast::GroupStatementAst& group) const;
+    result_type operator()(const ast::SimpleAttribute& attr) const;
+    result_type operator()(const ast::ComplexAttribute&) const;
+    result_type operator()(const ast::DefineStatement&) const;
 
+    void onCell(std::function<void(const Cell&)>&& callback);
+private:
+    std::function<void(const Cell&)> onCell_;
+};
 
 }
 
-struct Library
+class Cell final
 {
+public:
+    friend class ast::Visitor;
+    Cell();
+    ~Cell();
+    std::string name() const;
+private:
+    struct Impl;
+    std::unique_ptr<Impl> this_;
 };
+
 
 }
 

@@ -184,7 +184,6 @@ TEST_CASE("Define statement")
     CHECK(attr.attribute_name == "attribute_name");
     CHECK(attr.group_name == "group_name");
     CHECK(attr.attribute_type == ast::AttributeType::String);
-
 }
 
 TEST_CASE("Variant attribute statement")
@@ -248,7 +247,6 @@ TEST_CASE("Attribute list")
     CHECK_NOTHROW(double_ = boost::get<ast::SimpleAttribute>(list.at(1)));
     CHECK(double_.name == "double");
     CHECK_NOTHROW(boost::get<double>(double_.value) == Approx(4.2));
-
 }
 
 TEST_CASE("Nested Group")
@@ -337,116 +335,34 @@ TEST_CASE("Lookup Table")
     REQUIRE(golden == extractedValues);
 }
 
-
-struct ast_traversal
+ParsingApiFixture::ParsingApiFixture()
 {
-    typedef void result_type;
-
-    static std::set<std::string> cells;
-    static std::multimap<std::string, std::string> pins;
-    static std::map<std::string, std::string> directions;
-    static std::string clock;
-
-    static void reset()
-    {
-        cells.clear();
-        pins.clear();
-        directions.clear();
-        clock.clear();
-    }
-
-    ast_traversal(const ast::GroupStatementAst* parent = nullptr) :
-        parent(parent)
-    {
-
-    }
-
-    result_type operator()(const ast::GroupStatementAst& group) const
-    {
-        if(group.get().group_name == "cell")
-        {
-            cells.insert(group.get().name);
-        }
-        else if(group.get().group_name == "pin")
-        {
-            pins.insert(std::make_pair(parent->get().name, group.get().name));
-        }
-        for(auto const& child: group.get().children)
-        {
-            child.apply_visitor(ast_traversal(&group));
-//            boost::apply_visitor(child, ast_traversal(&group));
-        }
-    }
-
-    result_type operator()(const ast::SimpleAttribute& attr) const
-    {
-        if(attr.name == "direction")
-        {
-            directions.insert(std::make_pair(parent->get().name, boost::get<std::string>(attr.value)));
-        }
-        else if(attr.name == "clock")
-        {
-            clock = (boost::get<std::string>(attr.value) == "true" ? parent->get().name : clock);
-        }
-    }
-
-    result_type operator()(const ast::ComplexAttribute&) const
-    {
-
-    }
-
-    result_type operator()(const ast::DefineStatement&) const
-    {
-
-    }
-
-    const ast::GroupStatementAst* parent;
-};
-
-std::set<std::string> ast_traversal::cells;
-std::multimap<std::string, std::string> ast_traversal::pins;
-std::map<std::string, std::string> ast_traversal::directions;
-std::string ast_traversal::clock;
-
-
-#include <fstream>
-#include <iterator>
-
-TEST_CASE("Input file", "[file]")
-{
-#ifndef LIBERTY_TEST_RESOURCE_PATH
-    static_assert(1!=1, "Please set -DLIBERTY_TEST_RESOURCE_PATH");
-#endif
-
-    const char test_filename[] = LIBERTY_TEST_RESOURCE_PATH "/sample2_Late.lib";
     std::ifstream in(test_filename, std::fstream::in);
-    REQUIRE(in.good());
-
-    std::vector<char> buffer;
     std::copy(std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>(), std::back_inserter(buffer));
     std::replace(buffer.begin(), buffer.end(), '\n', ' ');
     std::replace(buffer.begin(), buffer.end(), '\\', ' ');
-
-    ast::AttributeStatement group;
-    CHECK(test_attr(buffer.data(), ast::attributeStatement, group, ast::spaceComment));
-    ast::GroupStatementAst& groupAst = boost::get<ast::GroupStatementAst>(group);
-    CHECK(groupAst.get().group_name == "library");
-    CHECK(groupAst.get().name == "contest");
-
-    group.apply_visitor(ast_traversal());
-
-    CHECK(ast_traversal::cells.size() == 2);
-    CHECK(ast_traversal::cells.count("INV_X1") == 1);
-    CHECK(ast_traversal::cells.count("DFF_X80") == 1);
-    CHECK(ast_traversal::pins.count("INV_X1") == 2);
-    CHECK(ast_traversal::pins.count("DFF_X80") == 3);
-    CHECK_NOTHROW(ast_traversal::directions.at("a") == "input");
-    CHECK_NOTHROW(ast_traversal::directions.at("o") == "output");
-    CHECK_NOTHROW(ast_traversal::directions.at("d") == "input");
-    CHECK_NOTHROW(ast_traversal::directions.at("d") == "input");
-    CHECK_NOTHROW(ast_traversal::directions.at("ck") == "input");
-    CHECK_NOTHROW(ast_traversal::directions.at("q") == "output");
-    CHECK(ast_traversal::clock == "ck");
-    ast_traversal::reset();
+    auto first = buffer.begin();
+    result = ast::liberty_parse(first, buffer.end(), library);
 }
 
+const char Sample2LateFilenameFixture::test_filename[] = LIBERTY_TEST_RESOURCE_PATH "/sample2_Late.lib";
+
+TEST_CASE_METHOD(ParsingApiFixture, "Input file (API)", "[file]")
+{
+    REQUIRE(result);
+    CHECK(library.get().group_name == "library");
+    CHECK(library.get().name == "contest");
+}
+
+TEST_CASE_METHOD(ParsingApiFixture, "Tree Visitor")
+{
+    ast::Visitor visitor;
+    std::vector<std::string> cells;
+    visitor.onCell([&](const Cell& cell){
+        cells.push_back(cell.name());
+    });
+    visitor(library);
+    CHECK(cells.size() == 2);
+    CHECK(std::count(cells.begin(), cells.end(), "INV_X1") == 1);
+    CHECK(std::count(cells.begin(), cells.end(), "DFF_X80") == 1);
+}

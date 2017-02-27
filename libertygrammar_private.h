@@ -88,7 +88,17 @@ namespace ast
     const auto spaceComment             = x3::rule<class spaceComment>{} = ascii::space | lexeme[lit("/*") >> *(char_ - x3::string("*/")) >> lit("*/")];
 
     BOOST_SPIRIT_DEFINE(name, quotedString, nonQuotedString, stringValue, value, simpleAttribute, complexAttribute, defineStatement, attributeList, attributeStatement, groupStatement)
-
+            
+    template <class Iterator>
+    bool liberty_parse(Iterator& first, Iterator const& last, Library& library)
+    {
+        bool result = x3::phrase_parse(first, last, groupStatement, spaceComment, library.get());
+        if(result && first == last)
+        {
+            return true;
+        }
+        return result;
+    }
 }
 }
 
