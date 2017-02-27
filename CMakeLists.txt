@@ -6,7 +6,7 @@ find_package(Boost 1.60 REQUIRED COMPONENTS system)
 
 aux_source_directory(. SRC_LIST)
 list(REMOVE_ITEM SRC_LIST "test.cpp")
-add_library(${PROJECT_NAME} ${SRC_LIST} libertygrammar_private.h)
+add_library(${PROJECT_NAME} ${SRC_LIST} LibertyParser.hpp)
 target_include_directories(${PROJECT_NAME} PRIVATE ${Boost_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
 

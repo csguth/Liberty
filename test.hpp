@@ -153,7 +153,7 @@ namespace spirit_test
 #include <iterator>
 #include <algorithm>
 
-#include "LibertyLibrary.h"
+#include "LibertyLibrary.hpp"
 
 class Sample2LateFilenameFixture
 {
