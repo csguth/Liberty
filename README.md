@@ -40,13 +40,32 @@ Use the Api function to parse a file. The function `liberty_parse` receives a pa
     return 0;
 }
 ```
-## To-do:
 
-* Improve this Readme.
-* Create a Wiki.
-* Implement Visitor functionalities.
-* Make syntax verification less abstract.
-* Etc.
+# Build Instructions
+## Requirements
+- A compatible C++14 compiler.
+- [Boost >=1.60](https://www.boost.org/)
+- [CMake >=2.18](https://cmake.org/)
+
+## First Time
+- Pull further dependencies:
+```sh
+git submodule update --init --recursive --depth 1
+```
+
+- Invoke CMake
+```sh
+cmake .
+```
+
+## Building and Testing
+```sh
+# Build
+make
+
+# Test
+./Liberty_test
+```
 
 ##
 _This Library is still in development. Feel free to create an issue._ 
