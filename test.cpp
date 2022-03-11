@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 #define CATCH_CONFIG_MAIN
-#include <catch.hpp>
+#include <catch2/catch.hpp>
 #include <vector>
 #include <utility>
 #include <boost/fusion/include/std_pair.hpp>

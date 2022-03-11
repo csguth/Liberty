@@ -1,18 +1,33 @@
+cmake_minimum_required(VERSION 3.11)
+
 project(Liberty)
-cmake_minimum_required(VERSION 2.8)
 
 set(CMAKE_CXX_STANDARD 14)
-find_package(Boost 1.60 REQUIRED COMPONENTS system)
+find_package(Boost 1.60)
 
-aux_source_directory(. SRC_LIST)
-list(REMOVE_ITEM SRC_LIST "test.cpp")
-add_library(${PROJECT_NAME} ${SRC_LIST} LibertyParser.hpp)
-target_include_directories(${PROJECT_NAME} PRIVATE ${Boost_INCLUDE_DIRS})
-target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
+add_library(${PROJECT_NAME} LibertyLibrary.cpp)
 
+target_link_libraries(${PROJECT_NAME} Boost::boost)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_executable(${PROJECT_NAME}_test test.cpp test.hpp)
-include_directories(${PROJECT_NAME}_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/Catch/single_include/.)
-target_link_libraries(${PROJECT_NAME}_test ${PROJECT_NAME})
+option(BUILD_TEST "Build test" ON)
 
-add_definitions("-DLIBERTY_TEST_RESOURCE_PATH=\"${CMAKE_CURRENT_SOURCE_DIR}/test\"")
+if(BUILD_TEST)
+    Include(FetchContent)
+
+    FetchContent_Declare(
+        Catch2
+        GIT_REPOSITORY https://github.com/catchorg/Catch2
+        GIT_TAG v2.13.8
+    )
+
+    FetchContent_MakeAvailable(Catch2)
+
+    add_executable(tests test.cpp)
+    target_link_libraries(tests PRIVATE
+        Catch2::Catch2
+        ${PROJECT_NAME}
+    )
+
+    target_compile_definitions(${PROJECT_NAME} PUBLIC LIBERTY_TEST_RESOURCE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/test")
+endif()
